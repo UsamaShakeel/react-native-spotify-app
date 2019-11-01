@@ -14,7 +14,8 @@ import {
   View,
   ActivityIndicator,
   FlatList,
-  StatusBar
+  StatusBar,
+  BackHandler
 } from 'react-native';
 import DropdownAlert from 'react-native-dropdownalert';
 import {images, fonts, helpers, strings, constants, theme} from '../Resources/index';
@@ -37,6 +38,23 @@ class RecommendedPlaylists extends Component<Props> {
   }
   componentDidMount() {
     this.fetchRecommendedPlaylists();
+    this._subscribe = this.props.navigation.addListener('didFocus', () => {
+
+        this.backHandler = BackHandler.addEventListener('hardwareBackPress', this._handleBack);
+    });
+    this._didBlur = this.props.navigation.addListener('didBlur', () => {
+
+        this.backHandler.remove()
+
+    });
+  }
+  componentWillUnmount() {
+    this._subscribe.remove()
+    this._didBlur.remove()
+  }
+  _handleBack = () => {
+    BackHandler.exitApp()
+    return true 
   }
 
   renderItem = ({item}) => {
@@ -88,7 +106,7 @@ class RecommendedPlaylists extends Component<Props> {
     if (!this.state.loading && this.state.hasMoreData) {
       this.setState(
         {offset: this.state.data.length, loading: true},
-        this.fetchTracks,
+        this.fetchRecommendedPlaylists,
       );
     }
   };
